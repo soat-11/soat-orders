@@ -3,6 +3,7 @@ import { AppModule } from "./app.module";
 import { ValidationPipe, Logger } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ConfigService } from "@nestjs/config";
+import { AllExceptionsFilter } from "@infra/http/filters/http-exception.filter";
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
@@ -30,6 +31,8 @@ async function bootstrap() {
     .setVersion("1.0")
     .addTag("orders")
     .build();
+
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("docs", app, document); // Acessível em http://localhost:3000/docs
