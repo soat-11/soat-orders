@@ -24,7 +24,7 @@ services:
       - DEFAULT_REGION=us-east-1
       - DEBUG=1
     volumes:
-      - "./scripts/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh"
+      - "./scripts/init-sqs.sh:/etc/localstack/init/ready.d/init-sqs.sh"
     networks:
       - soat-network
 

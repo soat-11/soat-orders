@@ -145,7 +145,7 @@ Retorna a lista ordenada para o monitor da cozinha, calculando o tempo de espera
 **Exemplo de Payload:**
 Exemplo de Resposta:
 
-```
+```bash
 {
   "data": [
     {
@@ -191,25 +191,25 @@ O sistema atualiza automaticamente o campo `updatedAt` no banco de dados.
 
 **Exemplo de Payload:**
 
-```
+```bash
 { "status": "IN_PREPARATION" }
 ```
 
 **Exemplo de Payload (Cancelar):**
 
-```
+```bash
 { "status": "CANCELLED" }
 ```
 
 **Exemplo de Resposta (Sucesso):**
 
-```
+```bash
 { "message": "Status atualizado com sucesso" }
 ```
 
 **Exemplo de Resposta (Erro de Regra de Negócio):**
 
-```
+```bash
 { "statusCode": 400, "message": "O pedido já está pronto, não pode voltar para preparação.", "error": "Bad Request" }
 ```
 
@@ -220,7 +220,7 @@ Retorna todos os dados de um pedido específico, incluindo a lista de itens, val
 
 **Exemplo de Resposta (200 OK):**
 
-```
+```bash
 {
   "message": "Pedido encontrado com sucesso",
   "data": {
@@ -243,7 +243,7 @@ Retorna todos os dados de um pedido específico, incluindo a lista de itens, val
 
 **Exemplo de Resposta (404 Not Found):**
 
-```
+```bash
 {
   "message": "Pedido não encontrado"
 }
@@ -256,7 +256,7 @@ Retorna todos os dados de um pedido específico, incluindo a lista de itens, val
 O sistema utiliza arquitetura orientada a eventos. Ao criar um pedido com sucesso:
 
 1. O pedido é salvo no PostgreSQL com status RECEIVED.
-2. Um evento order.created é publicado na fila SQS.
+2. Um evento order-created é publicado na fila SQS.
 
 ### Como visualizar as mensagens (Localstack)?
 
@@ -270,6 +270,25 @@ Para ler o conteúdo da mensagem enviada para a fila:
 docker exec soat-localstack awslocal sqs receive-message
 
 --queue-url http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-created-queue
+
+---
+
+## 🐳 Infraestrutura Automatizada
+
+Este projeto utiliza **LocalStack** para simular filas SQS e DLQs localmente.
+A configuração é automática via script de inicialização (`scripts/init-sqs.sh`) montado no Docker Compose.
+
+**Para rodar a infraestrutura:**
+
+```bash
+npm run docker:up
+```
+
+Filas criadas automaticamente:
+
+1. order-created (com DLQ configurada para resiliência)
+2. production-started
+3. production-ready
 
 ---
 

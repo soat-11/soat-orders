@@ -9,6 +9,7 @@ import { MessagingModule } from "../messaging/messaging.module";
 import { ListActiveOrdersUseCase } from "@core/use-cases/list-active-orders.use-case";
 import { UpdateOrderStatusUseCase } from "@core/use-cases/update-order-status.use-case";
 import { GetOrderUseCase } from "@core/use-cases/get-order.use-case";
+import { ProductionEventsConsumer } from "@infra/messaging/consumers/production-events.consumer";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { GetOrderUseCase } from "@core/use-cases/get-order.use-case";
     ListActiveOrdersUseCase,
     UpdateOrderStatusUseCase,
     GetOrderUseCase,
+    ProductionEventsConsumer,
     {
       provide: "IOrderRepository",
       useClass: TypeOrmOrderRepository,
