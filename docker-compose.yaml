@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: soat-orders-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: orders_db
+    networks:
+      - soat-network
+
+  # Mock da AWS (SQS e SNS)
+  localstack:
+    image: localstack/localstack:latest
+    container_name: soat-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs,sns
+      - DEFAULT_REGION=us-east-1
+      - DEBUG=1
+    volumes:
+      - "./scripts/init-sqs.sh:/etc/localstack/init/ready.d/init-sqs.sh"
+    networks:
+      - soat-network
+
+networks:
+  soat-network:
+    driver: bridge
