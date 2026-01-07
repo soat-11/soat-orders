@@ -173,12 +173,24 @@ Exemplo de Resposta:
 #### 3. Atualizar Status do Pedido
 
 **PATCH** /orders/:id/status
-Permite a atualização manual do status do pedido. Valida as regras de transição de domínio (ex: não permite voltar de PRONTO para PREPARAÇÃO).
+Permite a atualização manual do status do pedido ou o seu **Cancelamento**.
+O sistema atualiza automaticamente o campo `updatedAt` no banco de dados.
+
+**Regras de Negócio:**
+
+- Não é permitido cancelar pedidos que já estejam `READY` ou `COMPLETED`.
+- Não é permitido alterar pedidos já finalizados.
 
 **Exemplo de Payload:**
 
 ```
 { "status": "IN_PREPARATION" }
+```
+
+**Exemplo de Payload (Cancelar):**
+
+```
+{ "status": "CANCELLED" }
 ```
 
 **Exemplo de Resposta (Sucesso):**
@@ -191,6 +203,42 @@ Permite a atualização manual do status do pedido. Valida as regras de transiç
 
 ```
 { "statusCode": 400, "message": "O pedido já está pronto, não pode voltar para preparação.", "error": "Bad Request" }
+```
+
+#### 4. Atualizar Status do Pedido
+
+**GET** /orders/:id
+Retorna todos os dados de um pedido específico, incluindo a lista de itens, valores e datas de criação/atualização.
+
+**Exemplo de Resposta (200 OK):**
+
+```
+{
+  "message": "Pedido encontrado com sucesso",
+  "data": {
+    "orderId": "22b743f8-e831-49c2-b466-e6d60761513e",
+    "status": "RECEIVED",
+    "createdAt": "2026-01-07T14:30:00.000Z",
+    "updatedAt": "2026-01-07T14:35:00.000Z",
+    "quantityItems": 1,
+    "total": 25.50,
+    "items": [
+      {
+        "sku": "HAMBURGER-01",
+        "quantity": 1,
+        "price": 25.50
+      }
+    ]
+  }
+}
+```
+
+**Exemplo de Resposta (404 Not Found):**
+
+```
+{
+  "message": "Pedido não encontrado"
+}
 ```
 
 ---

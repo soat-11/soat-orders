@@ -29,14 +29,25 @@ export class Order {
       return;
     }
 
-    if (this.status === OrderStatus.COMPLETED) {
-      throw new Error("O pedido já foi finalizado e não pode ser alterado.");
+    if (
+      this.status === OrderStatus.COMPLETED ||
+      this.status === OrderStatus.CANCELLED
+    ) {
+      throw new Error(
+        "O pedido já está finalizado ou cancelado e não pode ser alterado."
+      );
     }
 
-    if (this.status === OrderStatus.CANCELLED) {
-      throw new Error("O pedido está cancelado e não pode ser alterado.");
+    // 2. Regra específica para Cancelamento
+    if (newStatus === OrderStatus.CANCELLED) {
+      if (this.status === OrderStatus.READY) {
+        throw new Error(
+          "Não é possível cancelar um pedido que já está pronto para retirada."
+        );
+      }
     }
 
+    // 3. Regra de retorno (Voltar atrás)
     if (
       this.status === OrderStatus.READY &&
       newStatus === OrderStatus.IN_PREPARATION

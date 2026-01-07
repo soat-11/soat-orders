@@ -28,6 +28,8 @@ import { ListOrderOutputDto } from "../dto/list-order.output";
 import { ListActiveOrdersUseCase } from "@core/use-cases/list-active-orders.use-case";
 import { UpdateOrderStatusInputDto } from "../dto/update-order-status.input";
 import { UpdateOrderStatusUseCase } from "@core/use-cases/update-order-status.use-case";
+import { GetOrderUseCase } from "@core/use-cases/get-order.use-case";
+import { GetOrderOutputDto } from "../dto/get-order.output";
 
 @ApiTags("orders")
 @Controller("orders")
@@ -35,7 +37,8 @@ export class OrderController {
   constructor(
     private readonly createOrderUseCase: CreateOrderUseCase,
     private readonly listActiveOrdersUseCase: ListActiveOrdersUseCase,
-    private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase
+    private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
+    private readonly getOrderUseCase: GetOrderUseCase
   ) {}
 
   @Post("checkout")
@@ -149,5 +152,37 @@ export class OrderController {
     return res
       .status(HttpStatus.OK)
       .json({ message: "Status atualizado com sucesso" });
+  }
+
+  @Get(":id")
+  @ApiOperation({ summary: "Buscar detalhes de um pedido por ID" })
+  @ApiParam({ name: "id", example: "22b743f8-e831-49c2-b466-e6d60761513e" })
+  @ApiResponse({
+    status: 200,
+    description: "Pedido encontrado com sucesso",
+    type: GetOrderOutputDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Pedido não encontrado",
+    schema: {
+      example: {
+        statusCode: 404,
+        message: "Pedido não encontrado",
+        error: "Not Found",
+      },
+    },
+  })
+  async findById(@Param("id") orderId: string, @Res() res: Response) {
+    const result = await this.getOrderUseCase.execute(orderId);
+
+    if (result.isFailure) {
+      throw new NotFoundException(result.error);
+    }
+
+    return res.status(HttpStatus.OK).json({
+      message: "Pedido encontrado com sucesso",
+      data: result.getValue(),
+    });
   }
 }

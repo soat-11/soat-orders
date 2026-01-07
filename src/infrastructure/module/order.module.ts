@@ -8,6 +8,7 @@ import { TypeOrmOrderRepository } from "../database/repositories/typeorm-order.r
 import { MessagingModule } from "../messaging/messaging.module";
 import { ListActiveOrdersUseCase } from "@core/use-cases/list-active-orders.use-case";
 import { UpdateOrderStatusUseCase } from "@core/use-cases/update-order-status.use-case";
+import { GetOrderUseCase } from "@core/use-cases/get-order.use-case";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UpdateOrderStatusUseCase } from "@core/use-cases/update-order-status.us
     CreateOrderUseCase,
     ListActiveOrdersUseCase,
     UpdateOrderStatusUseCase,
+    GetOrderUseCase,
     {
       provide: "IOrderRepository",
       useClass: TypeOrmOrderRepository,
