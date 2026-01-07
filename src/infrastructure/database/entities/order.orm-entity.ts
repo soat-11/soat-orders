@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   OneToMany,
+  UpdateDateColumn,
 } from "typeorm";
 import { OrderItemOrmEntity } from "./order-item.orm-entity";
 import { OrderStatus } from "@core/domain/enum/order-status.enum";
@@ -28,6 +29,9 @@ export class OrderOrmEntity {
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
+
+  @UpdateDateColumn({ name: "updated_at" })
+  updatedAt: Date;
 
   // Relacionamento: Uma Order tem Muitos Itens
   // cascade: true -> Ao salvar a Order, salva os Items automaticamente

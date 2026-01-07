@@ -137,9 +137,10 @@ Com a aplicação rodando, acesse a documentação interativa:
 **Exemplo de Payload:**
 { "items": [ { "sku": "HAMBURGER-01", "quantity": 2, "unitPrice": 25.50 } ], "totalValue": 51.00 }
 
-2. Listar Pedidos Ativos (Cozinha)
-   **GET** /orders
-   Retorna a lista ordenada para o monitor da cozinha, calculando o tempo de espera formatado.
+### Listar Pedidos Ativos (Cozinha)
+
+**GET** /orders
+Retorna a lista ordenada para o monitor da cozinha, calculando o tempo de espera formatado.
 
 **Exemplo de Payload:**
 Exemplo de Resposta:
@@ -167,6 +168,29 @@ Exemplo de Resposta:
     }
   ]
 }
+```
+
+#### 3. Atualizar Status do Pedido
+
+**PATCH** /orders/:id/status
+Permite a atualização manual do status do pedido. Valida as regras de transição de domínio (ex: não permite voltar de PRONTO para PREPARAÇÃO).
+
+**Exemplo de Payload:**
+
+```
+{ "status": "IN_PREPARATION" }
+```
+
+**Exemplo de Resposta (Sucesso):**
+
+```
+{ "message": "Status atualizado com sucesso" }
+```
+
+**Exemplo de Resposta (Erro de Regra de Negócio):**
+
+```
+{ "statusCode": 400, "message": "O pedido já está pronto, não pode voltar para preparação.", "error": "Bad Request" }
 ```
 
 ---

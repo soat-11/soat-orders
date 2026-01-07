@@ -7,6 +7,7 @@ import { OrderItemOrmEntity } from "../database/entities/order-item.orm-entity";
 import { TypeOrmOrderRepository } from "../database/repositories/typeorm-order.repository";
 import { MessagingModule } from "../messaging/messaging.module";
 import { ListActiveOrdersUseCase } from "@core/use-cases/list-active-orders.use-case";
+import { UpdateOrderStatusUseCase } from "@core/use-cases/update-order-status.use-case";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ListActiveOrdersUseCase } from "@core/use-cases/list-active-orders.use-
   providers: [
     CreateOrderUseCase,
     ListActiveOrdersUseCase,
+    UpdateOrderStatusUseCase,
     {
       provide: "IOrderRepository",
       useClass: TypeOrmOrderRepository,

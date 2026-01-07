@@ -8,6 +8,9 @@ import {
   BadRequestException,
   InternalServerErrorException,
   Get,
+  Patch,
+  Param,
+  NotFoundException,
 } from "@nestjs/common";
 import { Response } from "express";
 import {
@@ -16,19 +19,23 @@ import {
   ApiHeader,
   ApiResponse,
   ApiBody,
+  ApiParam,
 } from "@nestjs/swagger";
 import { CreateOrderUseCase } from "@core/use-cases/create-order.use-case";
 import { CreateOrderInputDto } from "../dto/create-order.input";
 import { CreateOrderOutputDto } from "../dto/create-order.output";
 import { ListOrderOutputDto } from "../dto/list-order.output";
 import { ListActiveOrdersUseCase } from "@core/use-cases/list-active-orders.use-case";
+import { UpdateOrderStatusInputDto } from "../dto/update-order-status.input";
+import { UpdateOrderStatusUseCase } from "@core/use-cases/update-order-status.use-case";
 
 @ApiTags("orders")
 @Controller("orders")
 export class OrderController {
   constructor(
     private readonly createOrderUseCase: CreateOrderUseCase,
-    private readonly listActiveOrdersUseCase: ListActiveOrdersUseCase
+    private readonly listActiveOrdersUseCase: ListActiveOrdersUseCase,
+    private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase
   ) {}
 
   @Post("checkout")
@@ -107,5 +114,40 @@ export class OrderController {
     return res.status(HttpStatus.OK).json({
       data: result.getValue(),
     });
+  }
+
+  @Patch(":id/status")
+  @ApiOperation({ summary: "Atualizar status do pedido (Manual/Interno)" })
+  @ApiParam({ name: "id", example: "22222222-2222-2222-2222-222222222222" })
+  @ApiBody({ type: UpdateOrderStatusInputDto })
+  @ApiResponse({ status: 200, description: "Status atualizado com sucesso" })
+  @ApiResponse({
+    status: 400,
+    description: "Transição inválida ou Erro de validação",
+  })
+  @ApiResponse({ status: 404, description: "Pedido não encontrado" })
+  async updateStatus(
+    @Param("id") orderId: string,
+    @Body() body: UpdateOrderStatusInputDto,
+    @Res() res: Response
+  ) {
+    const result = await this.updateOrderStatusUseCase.execute(
+      orderId,
+      body.status
+    );
+
+    if (result.isFailure) {
+      const errorMsg = result.error as string;
+
+      if (errorMsg.includes("não encontrado")) {
+        throw new NotFoundException(errorMsg);
+      }
+
+      throw new BadRequestException(errorMsg);
+    }
+
+    return res
+      .status(HttpStatus.OK)
+      .json({ message: "Status atualizado com sucesso" });
   }
 }

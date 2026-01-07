@@ -35,4 +35,15 @@ export class TypeOrmOrderRepository implements IOrderRepository {
 
     return entities.map(OrderMapper.toDomain);
   }
+
+  async findById(id: string): Promise<Order | null> {
+    const entity = await this.repository.findOne({
+      where: { id },
+      relations: ["items"],
+    });
+
+    if (!entity) return null;
+
+    return OrderMapper.toDomain(entity);
+  }
 }

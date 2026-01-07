@@ -35,7 +35,8 @@ export class OrderMapper {
       Number(entity.totalValue),
       entity.status,
       entity.id,
-      entity.createdAt
+      entity.createdAt,
+      entity.updatedAt
     );
   }
 }
