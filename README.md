@@ -176,6 +176,14 @@ Exemplo de Resposta:
 Permite a atualização manual do status do pedido ou o seu **Cancelamento**.
 O sistema atualiza automaticamente o campo `updatedAt` no banco de dados.
 
+**Valores aceitos para `status`:**
+
+- `RECEIVED` (Recebido)
+- `IN_PREPARATION` (Em Preparação)
+- `READY` (Pronto)
+- `COMPLETED` (Finalizado/Entregue)
+- `CANCELLED` (Cancelado)
+
 **Regras de Negócio:**
 
 - Não é permitido cancelar pedidos que já estejam `READY` ou `COMPLETED`.
