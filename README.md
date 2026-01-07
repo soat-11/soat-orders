@@ -31,8 +31,9 @@ O **Order Service** é o coração das operações de venda. Ele foi desenhado p
 ### Funcionalidades Principais:
 
 1.  **Checkout de Pedidos:** Recebe os itens, calcula totais e persiste o pedido inicial (`RECEIVED`).
-2.  **Publicação de Eventos:** Após criar o pedido, publica uma mensagem na fila `orders-queue` (AWS SQS) para processamento assíncrono.
-3.  **Gestão de Status:** Controla a máquina de estados do pedido (Recebido -> Em Preparação -> Pronto -> Finalizado).
+2.  **Fila de Cozinha Inteligente:** Lista pedidos ativos ordenados por prioridade de atendimento (Pronto > Em Preparação > Recebido) e tempo de espera.
+3.  **Publicação de Eventos:** Após criar o pedido, publica uma mensagem na fila `orders-queue` (AWS SQS) para processamento assíncrono.
+4.  **Gestão de Status:** Controla a máquina de estados do pedido (Recebido -> Em Preparação -> Pronto -> Finalizado).
 
 ---
 
@@ -135,6 +136,38 @@ Com a aplicação rodando, acesse a documentação interativa:
 
 **Exemplo de Payload:**
 { "items": [ { "sku": "HAMBURGER-01", "quantity": 2, "unitPrice": 25.50 } ], "totalValue": 51.00 }
+
+2. Listar Pedidos Ativos (Cozinha)
+   **GET** /orders
+   Retorna a lista ordenada para o monitor da cozinha, calculando o tempo de espera formatado.
+
+**Exemplo de Payload:**
+Exemplo de Resposta:
+
+```
+{
+  "data": [
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "status": "READY",
+      "createdAt": "2026-01-07T13:22:52.354Z",
+      "waitingTime": "33m 39s"
+    },
+    {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "status": "IN_PREPARATION",
+      "createdAt": "2026-01-07T13:37:56.291Z",
+      "waitingTime": "18m 35s"
+    },
+    {
+      "id": "44444444-4444-4444-4444-444444444444",
+      "status": "RECEIVED",
+      "createdAt": "2026-01-07T13:07:59.843Z",
+      "waitingTime": "48m 31s"
+    }
+  ]
+}
+```
 
 ---
 

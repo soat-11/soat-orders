@@ -7,6 +7,7 @@ import {
   HttpStatus,
   BadRequestException,
   InternalServerErrorException,
+  Get,
 } from "@nestjs/common";
 import { Response } from "express";
 import {
@@ -19,11 +20,16 @@ import {
 import { CreateOrderUseCase } from "@core/use-cases/create-order.use-case";
 import { CreateOrderInputDto } from "../dto/create-order.input";
 import { CreateOrderOutputDto } from "../dto/create-order.output";
+import { ListOrderOutputDto } from "../dto/list-order.output";
+import { ListActiveOrdersUseCase } from "@core/use-cases/list-active-orders.use-case";
 
 @ApiTags("orders")
 @Controller("orders")
 export class OrderController {
-  constructor(private readonly createOrderUseCase: CreateOrderUseCase) {}
+  constructor(
+    private readonly createOrderUseCase: CreateOrderUseCase,
+    private readonly listActiveOrdersUseCase: ListActiveOrdersUseCase
+  ) {}
 
   @Post("checkout")
   @ApiOperation({
@@ -82,5 +88,24 @@ export class OrderController {
         "Erro inesperado ao processar o checkout."
       );
     }
+  }
+
+  @Get()
+  @ApiOperation({ summary: "Listar pedidos ativos (Cozinha)" })
+  @ApiResponse({
+    status: 200,
+    description: "Lista ordenada: Pronto > Em Preparação > Recebido",
+    type: [ListOrderOutputDto],
+  })
+  async listActive(@Res() res: Response) {
+    const result = await this.listActiveOrdersUseCase.execute();
+
+    if (result.isFailure) {
+      throw new InternalServerErrorException(result.error);
+    }
+
+    return res.status(HttpStatus.OK).json({
+      data: result.getValue(),
+    });
   }
 }

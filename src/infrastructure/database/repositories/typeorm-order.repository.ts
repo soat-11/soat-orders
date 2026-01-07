@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, In } from "typeorm";
 import { IOrderRepository } from "@core/domain/repositories/i-order.repository";
 import { Order } from "@core/domain/entities/order.entity";
 import { OrderOrmEntity } from "../entities/order.orm-entity";
 import { OrderMapper } from "../mappers/order.mapper";
+import { OrderStatus } from "@core/domain/enum/order-status.enum";
 
 @Injectable()
 export class TypeOrmOrderRepository implements IOrderRepository {
@@ -18,5 +19,20 @@ export class TypeOrmOrderRepository implements IOrderRepository {
     const savedEntity = await this.repository.save(entity);
 
     return OrderMapper.toDomain(savedEntity);
+  }
+
+  async findManyByStatus(statuses: OrderStatus[]): Promise<Order[]> {
+    const entities = await this.repository.find({
+      where: {
+        status: In(statuses),
+      },
+
+      order: {
+        createdAt: "ASC",
+      },
+      relations: ["items"],
+    });
+
+    return entities.map(OrderMapper.toDomain);
   }
 }
