@@ -33,7 +33,13 @@ export class ProductionEventsConsumer implements OnModuleInit, OnModuleDestroy {
       OrderStatus.READY
     );
 
-    this.consumers.push(startedConsumer, readyConsumer);
+    // 2. Ouvinte: production.ready -> Muda para COMPLETED
+    const completedConsumer = this.createConsumer(
+      process.env.SQS_PRODUCTION_COMPLETED_URL!,
+      OrderStatus.COMPLETED
+    );
+
+    this.consumers.push(startedConsumer, readyConsumer, completedConsumer);
     this.consumers.forEach((c) => c.start());
   }
 
@@ -56,24 +62,24 @@ export class ProductionEventsConsumer implements OnModuleInit, OnModuleDestroy {
       handleMessage: async (message) => {
         try {
           const body = JSON.parse(message.Body!);
-          const orderId = body.orderId;
+          const sessionId = body.sessionId;
 
           this.logger.log(
-            `Mensagem recebida da fila [${targetStatus}]. OrderID: ${orderId}`
+            `Mensagem recebida da fila [${targetStatus}]. OrderID: ${sessionId}`
           );
 
           const result = await this.updateOrderStatusUseCase.execute(
-            orderId,
+            sessionId,
             targetStatus
           );
 
           if (result.isFailure) {
             this.logger.error(
-              `Erro ao atualizar pedido ${orderId}: ${result.error}`
+              `Erro ao atualizar pedido ${sessionId}: ${result.error}`
             );
           } else {
             this.logger.log(
-              `Pedido ${orderId} atualizado para ${targetStatus} com sucesso.`
+              `Pedido ${sessionId} atualizado para ${targetStatus} com sucesso.`
             );
           }
         } catch (error) {

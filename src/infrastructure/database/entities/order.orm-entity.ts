@@ -14,7 +14,7 @@ export class OrderOrmEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ name: "session_id" })
+  @Column({ name: "session_id", type: "uuid" })
   sessionId: string;
 
   @Column({

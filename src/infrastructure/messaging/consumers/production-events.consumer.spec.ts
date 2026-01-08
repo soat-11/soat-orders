@@ -29,8 +29,12 @@ describe("ProductionEventsConsumer", () => {
   };
 
   beforeEach(async () => {
+    // Configurar variáveis de ambiente necessárias para os 3 consumidores
     process.env.SQS_PRODUCTION_STARTED_URL = "http://sqs/started";
     process.env.SQS_PRODUCTION_READY_URL = "http://sqs/ready";
+    process.env.SQS_PRODUCTION_COMPLETED_URL = "http://sqs/completed";
+
+    jest.clearAllMocks(); // Limpa chamadas anteriores
 
     (Consumer.create as jest.Mock).mockReturnValue(mockConsumerInstance);
     mockUseCase.execute.mockResolvedValue(Result.ok());
@@ -48,21 +52,22 @@ describe("ProductionEventsConsumer", () => {
     useCase = module.get<UpdateOrderStatusUseCase>(UpdateOrderStatusUseCase);
   });
 
-  it("deve iniciar os consumidores no onModuleInit", () => {
+  it("deve iniciar os 3 consumidores no onModuleInit", () => {
     consumerService.onModuleInit();
-    expect(Consumer.create).toHaveBeenCalledTimes(2);
 
-    expect(mockConsumerInstance.start).toHaveBeenCalledTimes(2);
+    expect(Consumer.create).toHaveBeenCalledTimes(3);
+    expect(mockConsumerInstance.start).toHaveBeenCalledTimes(3);
   });
 
-  it("deve parar os consumidores no onModuleDestroy", () => {
-    consumerService.onModuleInit();
+  it("deve parar os 3 consumidores no onModuleDestroy", () => {
+    consumerService.onModuleInit(); // Inicia para popular o array
 
     consumerService.onModuleDestroy();
-    expect(mockConsumerInstance.stop).toHaveBeenCalledTimes(2);
+
+    expect(mockConsumerInstance.stop).toHaveBeenCalledTimes(3);
   });
 
-  it("deve processar mensagem e chamar o UseCase (handleMessage)", async () => {
+  it("deve processar mensagem e chamar o UseCase com sessionId correto", async () => {
     jest.clearAllMocks();
     (Consumer.create as jest.Mock).mockReturnValue(mockConsumerInstance);
 
@@ -72,10 +77,11 @@ describe("ProductionEventsConsumer", () => {
     const handleMessage = config.handleMessage;
 
     const message = {
-      Body: JSON.stringify({ orderId: "123" }),
+      Body: JSON.stringify({ sessionId: "123" }),
     };
 
     await handleMessage(message);
+
     expect(useCase.execute).toHaveBeenCalledWith("123", expect.any(String));
   });
 
@@ -85,7 +91,7 @@ describe("ProductionEventsConsumer", () => {
 
     mockUseCase.execute.mockResolvedValue(Result.fail("Erro lógica"));
 
-    const message = { Body: JSON.stringify({ orderId: "123" }) };
+    const message = { Body: JSON.stringify({ sessionId: "123" }) };
 
     await expect(config.handleMessage(message)).resolves.not.toThrow();
   });
