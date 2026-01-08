@@ -11,11 +11,11 @@ export class UpdateOrderStatusUseCase {
   ) {}
 
   async execute(
-    orderId: string,
+    sessionId: string,
     newStatus: OrderStatus
   ): Promise<Result<void>> {
     try {
-      const order = await this.orderRepository.findById(orderId);
+      const order = await this.orderRepository.findById(sessionId);
 
       if (!order) {
         return Result.fail("Pedido não encontrado.");

@@ -10,15 +10,14 @@ export class GetOrderUseCase {
     private readonly orderRepository: IOrderRepository
   ) {}
 
-  async execute(orderId: string): Promise<Result<GetOrderOutputDto>> {
-    const order = await this.orderRepository.findById(orderId);
+  async execute(id: string): Promise<Result<GetOrderOutputDto>> {
+    const order = await this.orderRepository.findById(id);
 
     if (!order) {
       return Result.fail("Pedido não encontrado");
     }
 
     const dto = GetOrderOutputDto.fromDomain(order);
-
     return Result.ok(dto);
   }
 }

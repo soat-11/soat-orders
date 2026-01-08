@@ -17,6 +17,7 @@ awslocal sqs create-queue --queue-name order-created \
 # 3. Filas de Producao
 awslocal sqs create-queue --queue-name production-started
 awslocal sqs create-queue --queue-name production-ready
+awslocal sqs create-queue --queue-name production-withdrawn
 
 echo "########### Filas SQS criadas com sucesso ###########"
 awslocal sqs list-queues

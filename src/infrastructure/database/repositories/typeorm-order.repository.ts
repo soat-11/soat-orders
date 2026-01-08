@@ -36,9 +36,9 @@ export class TypeOrmOrderRepository implements IOrderRepository {
     return entities.map(OrderMapper.toDomain);
   }
 
-  async findById(id: string): Promise<Order | null> {
+  async findById(idOrSession: string): Promise<Order | null> {
     const entity = await this.repository.findOne({
-      where: { id },
+      where: [{ id: idOrSession }, { sessionId: idOrSession }],
       relations: ["items"],
     });
 
