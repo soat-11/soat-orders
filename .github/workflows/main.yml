@@ -46,6 +46,7 @@ jobs:
           SQS_ORDER_CREATED_URL: https://sqs.us-east-1.amazonaws.com/000/order-created
           SQS_PRODUCTION_STARTED_URL: https://sqs.us-east-1.amazonaws.com/000/production-started
           SQS_PRODUCTION_READY_URL: https://sqs.us-east-1.amazonaws.com/000/production-ready
+          SQS_PRODUCTION_COMPLETED_URL: https://sqs.fake/production-withdrawn
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: fake
           AWS_SECRET_ACCESS_KEY: fake
