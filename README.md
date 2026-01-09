@@ -102,7 +102,7 @@ Database (Postgres)
 DB_HOST=127.0.0.1 DB_PORT=5432 DB_USERNAME=user DB_PASSWORD=password DB_NAME=orders_db
 
 AWS / Localstack (Mensageria)
-AWS_REGION=us-east-1 SQS_ENDPOINT=http://localhost:4566 SQS_ORDER_CREATED_URL=http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/orders-queue
+AWS_REGION=us-east-1 AWS_ENDPOINT=http://localhost:4566 SQS_ORDER_CREATED_URL=http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/orders-queue
 
 ### 3. Suba a Infraestrutura (Docker)
 
