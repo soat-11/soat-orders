@@ -57,7 +57,10 @@ export class ProductionEventsConsumer implements OnModuleInit, OnModuleDestroy {
       sqs: new SQSClient({
         region: process.env.AWS_REGION || "us-east-1",
         endpoint: process.env.SQS_ENDPOINT || "http://localhost:4566",
-        credentials: { accessKeyId: "test", secretAccessKey: "test" },
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID || "test",
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "test",
+        },
       }),
       handleMessage: async (message) => {
         try {
