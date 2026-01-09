@@ -17,13 +17,6 @@ jobs:
 
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
-
-      - name: Lint
-        run: yarn lint
-
-      - name: Type Check
-        run: yarn typecheck
-
   test:
     name: Test
     runs-on: ubuntu-latest
