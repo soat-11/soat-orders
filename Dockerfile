@@ -1,36 +1,38 @@
-# --- Stage 1: Build ---
-FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 
-WORKDIR /usr/src/app
+FROM node:24-alpine AS builder
 
-COPY package*.json ./
+WORKDIR /app
 
-# Instala todas as dependências (incluindo devDependencies para o build)
-RUN npm ci
+
+COPY package.json yarn.lock ./
+
+RUN yarn install --frozen-lockfile
 
 COPY . .
 
-# Compila o projeto (Gera a pasta /dist)
-RUN npm run build
+RUN yarn build
 
-# Verifica se o build foi gerado corretamente
-RUN ls -la dist/ && test -f dist/main.js
+FROM node:24-alpine
 
-# --- Stage 2: Production ---
-FROM node:20-alpine
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY package*.json ./
+COPY package.json yarn.lock ./
 
-# Instala apenas dependências de produção
-RUN npm ci --omit=dev
+RUN yarn install --production --frozen-lockfile && \
+    yarn cache clean
 
-# Copia o build gerado no estágio anterior
-COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /app/dist ./dist
+
+RUN chown -R nestjs:nodejs /app
+
+USER nestjs
 
 EXPOSE 3000
 
-USER node
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/main.js"]
