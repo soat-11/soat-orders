@@ -90,7 +90,7 @@ jobs:
         run: |
           IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_NAME }}:${{ github.sha }}
 
-          # Atualiza o deployment 'order-deployment' no container 'order'
-          kubectl set image deployment/order-deployment order-container="$IMAGE_URI"
+          # Alterado: Atualiza o deployment 'order-deployment' no container 'order'
+          kubectl set image deployment/order-deployment order="$IMAGE_URI"
 
           kubectl rollout status deployment/order-deployment --timeout=120s
