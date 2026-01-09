@@ -1,4 +1,7 @@
-global.crypto = require("crypto");
+if (!global.crypto) {
+  // Só aplica se não existir (para Node 18)
+  global.crypto = require("crypto");
+}
 
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
