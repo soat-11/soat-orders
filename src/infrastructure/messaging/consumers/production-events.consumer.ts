@@ -19,7 +19,78 @@ export class ProductionEventsConsumer implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit() {
+    // ==================================================================
+    // 🕵️‍♂️ DEBUG AREA - INÍCIO
+    // ==================================================================
+    this.logger.warn(">>> INICIANDO DEBUG DE VARIÁVEIS DE AMBIENTE <<<");
+
+    // 1. Verificando Região e Endpoint
+    // Se AWS_ENDPOINT for undefined, é o correto para AWS real.
+    // Se aparecer "localhost", vai dar erro no cluster.
+    this.logger.log(
+      `[ENV] AWS_REGION: ${
+        process.env.AWS_REGION || "NÃO DEFINIDO (Usará default)"
+      }`
+    );
+    this.logger.log(
+      `[ENV] AWS_ENDPOINT: ${
+        process.env.AWS_ENDPOINT || "UNDEFINED (Isso é BOM para Produção AWS)"
+      }`
+    );
+
+    // 2. Verificando Credenciais (Segurança: Mostra só o final)
+    const accessKey = process.env.AWS_ACCESS_KEY_ID;
+    const secretKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+    if (accessKey) {
+      this.logger.log(
+        `[ENV] AWS_ACCESS_KEY_ID: Encontrado (...${accessKey.slice(-4)})`
+      );
+    } else {
+      this.logger.error(
+        `[ENV] AWS_ACCESS_KEY_ID: ❌ NÃO ENCONTRADO! Vai usar 'test' e falhar.`
+      );
+    }
+
+    if (secretKey) {
+      this.logger.log(
+        `[ENV] AWS_SECRET_ACCESS_KEY: Encontrado (...${secretKey.slice(-4)})`
+      );
+    } else {
+      this.logger.error(
+        `[ENV] AWS_SECRET_ACCESS_KEY: ❌ NÃO ENCONTRADO! Vai usar 'test' e falhar.`
+      );
+    }
+
+    // 3. Verificando URLs das Filas
+    this.logger.log(
+      `[QUEUE] STARTED URL: ${
+        process.env.SQS_PRODUCTION_STARTED_URL || "❌ MISSING"
+      }`
+    );
+    this.logger.log(
+      `[QUEUE] READY URL: ${
+        process.env.SQS_PRODUCTION_READY_URL || "❌ MISSING"
+      }`
+    );
+    this.logger.log(
+      `[QUEUE] COMPLETED URL: ${
+        process.env.SQS_PRODUCTION_COMPLETED_URL || "❌ MISSING"
+      }`
+    );
+
+    this.logger.warn(">>> FIM DO DEBUG <<<");
+    // ==================================================================
+
     this.logger.log("Iniciando consumidores SQS...");
+
+    // Proteção para não quebrar se a URL não existir
+    if (!process.env.SQS_PRODUCTION_STARTED_URL) {
+      this.logger.error(
+        "Abortando inicialização: URLs das filas não definidas."
+      );
+      return;
+    }
 
     // 1. Ouvinte: production.started -> Muda para IN_PREPARATION
     const startedConsumer = this.createConsumer(
@@ -33,7 +104,7 @@ export class ProductionEventsConsumer implements OnModuleInit, OnModuleDestroy {
       OrderStatus.READY
     );
 
-    // 2. Ouvinte: production.ready -> Muda para COMPLETED
+    // 3. Ouvinte: production.ready -> Muda para COMPLETED
     const completedConsumer = this.createConsumer(
       process.env.SQS_PRODUCTION_COMPLETED_URL!,
       OrderStatus.COMPLETED
@@ -52,16 +123,18 @@ export class ProductionEventsConsumer implements OnModuleInit, OnModuleDestroy {
     queueUrl: string,
     targetStatus: OrderStatus
   ): Consumer {
+    const config = {
+      region: process.env.AWS_REGION || "us-east-1",
+      ...(process.env.AWS_ENDPOINT && { endpoint: process.env.AWS_ENDPOINT }),
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "test",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "test",
+      },
+    };
+
     return Consumer.create({
       queueUrl,
-      sqs: new SQSClient({
-        region: process.env.AWS_REGION || "us-east-1",
-        endpoint: process.env.SQS_ENDPOINT || "http://localhost:4566",
-        credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID || "test",
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "test",
-        },
-      }),
+      sqs: new SQSClient(config),
       handleMessage: async (message) => {
         try {
           const body = JSON.parse(message.Body!);

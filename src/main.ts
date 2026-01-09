@@ -1,3 +1,5 @@
+global.crypto = require("crypto");
+
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ValidationPipe, Logger } from "@nestjs/common";
