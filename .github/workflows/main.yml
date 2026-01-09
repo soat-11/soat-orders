@@ -12,7 +12,7 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY_NAME: orders
+  ECR_REPOSITORY_NAME: order
   EKS_CLUSTER_NAME: soat-challenge-eks-cluster
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
           DB_PORT: 5432
           DB_USER: admin
           DB_PASSWORD: password
-          DB_NAME: orders_db_test
+          DB_NAME: order_db_test
           PORT: 3000
           SQS_ORDER_CREATED_URL: https://sqs.us-east-1.amazonaws.com/000/order-created
           SQS_PRODUCTION_STARTED_URL: https://sqs.us-east-1.amazonaws.com/000/production-started
@@ -65,7 +65,6 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
 
       - name: Fazer login no Amazon ECR
         id: login-ecr
@@ -86,8 +85,8 @@ jobs:
         run: |
           IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_NAME }}:latest
 
-          # Alterado: Atualiza o deployment 'orders-deployment' no container 'orders-container'
-          kubectl set image deployment/orders-deployment orders-container="$IMAGE_URI"
+          # Alterado: Atualiza o deployment 'order-deployment' no container 'order'
+          kubectl set image deployment/order-deployment order-container="$IMAGE_URI"
 
-          kubectl rollout restart deployment/orders-deployment
-          kubectl rollout status deployment/orders-deployment
+          kubectl rollout restart deployment/order-deployment
+          kubectl rollout status deployment/order-deployment
