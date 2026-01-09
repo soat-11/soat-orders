@@ -22,7 +22,7 @@ export class ProductionEventsConsumer implements OnModuleInit, OnModuleDestroy {
     // ==================================================================
     // 🕵️‍♂️ DEBUG AREA - INÍCIO
     // ==================================================================
-    this.logger.warn(">>> INICIANDO DEBUG DE VARIÁVEIS DE AMBIENTE <<<");
+    this.logger.warn(">>> INICIANDO DEBUG DE VARIÁVEIS DE AMBIENT<<<");
 
     // 1. Verificando Região e Endpoint
     // Se AWS_ENDPOINT for undefined, é o correto para AWS real.
