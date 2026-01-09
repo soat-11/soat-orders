@@ -1,5 +1,5 @@
 # --- Stage 1: Build ---
-FROM node:20-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 
 WORKDIR /usr/src/app
 
@@ -13,6 +13,9 @@ COPY . .
 # Compila o projeto (Gera a pasta /dist)
 RUN npm run build
 
+# Verifica se o build foi gerado corretamente
+RUN ls -la dist/ && test -f dist/main.js
+
 # --- Stage 2: Production ---
 FROM node:20-alpine
 
@@ -21,7 +24,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Instala apenas dependências de produção
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copia o build gerado no estágio anterior
 COPY --from=builder /usr/src/app/dist ./dist
