@@ -9,7 +9,7 @@ export class SqsEventPublisher implements IEventPublisher {
 
   constructor(
     @Inject("SQS_CLIENT") private readonly sqsClient: SQSClient,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   async publish<T>(eventName: string, payload: T): Promise<void> {
@@ -18,20 +18,12 @@ export class SqsEventPublisher implements IEventPublisher {
 
       if (!queueUrl) {
         this.logger.warn(
-          `Nenhuma fila configurada para o evento: ${eventName}`
+          `Nenhuma fila configurada para o evento: ${eventName}`,
         );
         return;
       }
 
-      const messageBody = JSON.stringify({
-        pattern: eventName,
-        data: payload,
-        metadata: {
-          timestamp: new Date().toISOString(),
-          service: "order-service",
-        },
-      });
-
+      const messageBody = JSON.stringify(payload);
       const command = new SendMessageCommand({
         QueueUrl: queueUrl,
         MessageBody: messageBody,
