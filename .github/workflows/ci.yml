@@ -72,8 +72,8 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/payment:${{ github.sha }}
-            ${{ steps.login-ecr.outputs.registry }}/payment:latest
+            ${{ steps.login-ecr.outputs.registry }}/order:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/order:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
