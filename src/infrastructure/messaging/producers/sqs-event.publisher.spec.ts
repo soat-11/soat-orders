@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { SqsEventPublisher } from "./sqs-event-publisher";
+import { SqsEventPublisher } from "./sqs-event.publisher";
 import { ConfigService } from "@nestjs/config";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 
