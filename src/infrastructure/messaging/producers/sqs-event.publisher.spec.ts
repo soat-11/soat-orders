@@ -1,66 +1,72 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { SqsEventPublisher } from "./sqs-event-publisher";
+import { SqsEventPublisher } from "./sqs-event.publisher";
 import { ConfigService } from "@nestjs/config";
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-
-// Mock do AWS SDK v3
-jest.mock("@aws-sdk/client-sqs");
+import { SendMessageCommand } from "@aws-sdk/client-sqs";
 
 describe("SqsEventPublisher", () => {
   let publisher: SqsEventPublisher;
-  let configService: ConfigService;
-  let sqsClient: SQSClient;
+  let mockSqsSend: jest.Mock;
 
   const mockConfigService = {
-    get: jest.fn((key) => {
-      if (key === "SQS_ORDER_CREATED_URL") return "http://sqs/order-created";
-      return null;
+    get: jest.fn((key: string) => {
+      if (key === "SQS_ORDER_CREATED_URL") return "https://sqs.aws/order-queue";
+      return undefined;
     }),
   };
 
-  const mockSend = jest.fn();
-
   beforeEach(async () => {
-    // 1. IMPORTANTE: Limpa o contador de chamadas antes de cada teste
-    jest.clearAllMocks();
-
-    (SQSClient as jest.Mock).mockImplementation(() => ({
-      send: mockSend,
-    }));
+    mockSqsSend = jest.fn().mockResolvedValue({});
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SqsEventPublisher,
-        { provide: ConfigService, useValue: mockConfigService },
-        { provide: "SQS_CLIENT", useClass: SQSClient },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
+
+        {
+          provide: "SQS_CLIENT",
+          useValue: {
+            send: mockSqsSend,
+          },
+        },
       ],
     }).compile();
 
     publisher = module.get<SqsEventPublisher>(SqsEventPublisher);
-    // 2. IMPORTANTE: Recupera a instância do ConfigService mockado
-    configService = module.get<ConfigService>(ConfigService);
-    sqsClient = module.get("SQS_CLIENT");
   });
 
-  it("deve publicar mensagem na fila correta", async () => {
-    mockSend.mockResolvedValue({}); // Sucesso AWS
+  it("deve publicar mensagem RAW JSON (sem envelope NestJS) na fila correta", async () => {
+    const payload = { sessionId: "123", idempotencyKey: "abc" };
 
-    await publisher.publish("order.created", { id: 1 });
+    await publisher.publish("order.created", payload);
 
-    // Agora configService não é mais undefined
-    expect(configService.get).toHaveBeenCalledWith("SQS_ORDER_CREATED_URL");
-    expect(mockSend).toHaveBeenCalledWith(expect.any(SendMessageCommand));
+    expect(mockConfigService.get).toHaveBeenCalledWith("SQS_ORDER_CREATED_URL");
+    expect(mockSqsSend).toHaveBeenCalledTimes(1);
+
+    const commandCall = mockSqsSend.mock.calls[0][0];
+
+    expect(commandCall).toBeInstanceOf(SendMessageCommand);
+
+    const commandInput = commandCall.input;
+    expect(commandInput.QueueUrl).toBe("https://sqs.aws/order-queue");
+    expect(commandInput.MessageBody).toBe(JSON.stringify(payload));
   });
 
-  it("deve logar aviso e não enviar se a URL não existir", async () => {
-    await publisher.publish("evento.desconhecido", {});
-    // Agora vai passar porque o mockSend foi limpo no beforeEach
-    expect(mockSend).not.toHaveBeenCalled();
+  it("deve ignorar e logar aviso se a URL da fila não existir", async () => {
+    await publisher.publish("evento.inexistente", {});
+
+    expect(mockConfigService.get).toHaveBeenCalled();
+
+    expect(mockSqsSend).not.toHaveBeenCalled();
   });
 
-  it("deve capturar erro se o SQS falhar (sem crashar a app)", async () => {
-    mockSend.mockRejectedValue(new Error("Erro AWS"));
+  it("deve capturar erro silenciosamente se o SQS falhar", async () => {
+    mockSqsSend.mockRejectedValue(new Error("Erro de Conexão AWS"));
 
     await expect(publisher.publish("order.created", {})).resolves.not.toThrow();
+
+    expect(mockSqsSend).toHaveBeenCalled();
   });
 });
