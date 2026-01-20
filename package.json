@@ -79,6 +79,8 @@
       "/test/",
       ".module.ts",
       ".dto.ts",
+      ".input.ts",
+      ".output.ts",
       ".entity.ts",
       ".enum.ts",
       ".interface.ts",
