@@ -1,7 +1,7 @@
 import { Module, Global, Logger } from "@nestjs/common";
 import { SQSClient } from "@aws-sdk/client-sqs";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { SqsEventPublisher } from "./producers/sqs-event-publisher";
+import { SqsEventPublisher } from "./producers/sqs-event.publisher";
 
 @Global()
 @Module({
@@ -17,19 +17,19 @@ import { SqsEventPublisher } from "./producers/sqs-event-publisher";
         const endpoint = configService.get<string>("AWS_ENDPOINT");
         const accessKeyId = configService.get<string>("AWS_ACCESS_KEY_ID");
         const secretAccessKey = configService.get<string>(
-          "AWS_SECRET_ACCESS_KEY"
+          "AWS_SECRET_ACCESS_KEY",
         );
 
         // --- DEBUG RÁPIDO PARA O PUBLISHER ---
         logger.warn(`[SQS CLIENT FACTORY] Inicializando...`);
         logger.log(`[SQS CLIENT] Region: ${region}`);
         logger.log(
-          `[SQS CLIENT] Endpoint: ${endpoint || "UNDEFINED (Usando AWS Real)"}`
+          `[SQS CLIENT] Endpoint: ${endpoint || "UNDEFINED (Usando AWS Real)"}`,
         );
         logger.log(
           `[SQS CLIENT] AccessKey: ${
             accessKeyId ? "DEFINIDO" : 'NÃO DEFINIDO (Usará "test")'
-          }`
+          }`,
         );
         // -------------------------------------
 
