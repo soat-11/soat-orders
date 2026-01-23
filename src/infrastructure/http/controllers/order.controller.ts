@@ -48,7 +48,7 @@ export class OrderController {
       "Recebe os itens do carrinho, cria o pedido no banco com status RECEIVED e publica evento na fila.",
   })
   @ApiHeader({
-    name: "session-id",
+    name: "x-session-id",
     description: "ID da sessão do usuário (UUID)",
     required: true,
     example: "550e8400-e29b-41d4-a716-446655440000",
@@ -69,12 +69,12 @@ export class OrderController {
     description: "Erro interno no processamento (Banco ou Fila fora do ar).",
   })
   async checkout(
-    @Headers("session-id") sessionId: string,
+    @Headers("x-session-id") sessionId: string,
     @Body() body: CreateOrderInputDto,
     @Res() res: Response
   ) {
     if (!sessionId) {
-      throw new BadRequestException('O header "session-id" é obrigatório.');
+      throw new BadRequestException('O header "x-session-id" é obrigatório.');
     }
 
     try {
