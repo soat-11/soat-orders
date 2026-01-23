@@ -326,8 +326,10 @@ src/
 
 ## 🧪 Testes
 
-(Seção futura para testes unitários e e2e)
+### Atual cobertura dos testes
+![coverage](image.png)
 
+### Como executar os testes
 Rodar testes unitários
 npm run test
 
