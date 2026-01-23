@@ -62,10 +62,10 @@ describe("OrderController", () => {
   });
 
   describe("checkout", () => {
-    const sessionId = "session-123";
+    const sessionId = "x-session-123";
     const body = { items: [], totalValue: 50 };
 
-    it("deve retornar erro 400 se não enviar session-id", async () => {
+    it("deve retornar erro 400 se não enviar x-session-id", async () => {
       await expect(controller.checkout("", body, response)).rejects.toThrow(
         BadRequestException
       );
